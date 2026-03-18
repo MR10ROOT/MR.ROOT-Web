@@ -730,7 +730,7 @@
       <p>Masz pytanie o bezpieczeństwo, projekt lub chcesz współpracować?<br>Napisz — odpowiem zaszyfrowaną wiadomością. 🔐</p>
       <div class="contact-item">
         <span>✉</span>
-        <span>kamilpaczkowski001@gmail.com</span>
+        <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e9828884808599888a9382869e9a8280d9d9d8a98e84888085c78a8684">[email&#160;protected]</a></span>
       </div>
       <div class="contact-item">
         <span>🐙</span>
@@ -741,7 +741,7 @@
         <span>PGP key available on request</span>
       </div>
     </div>
-    <form class="contact-form" name="kontakt" method="POST" data-netlify="true" action="/sukces.html">
+    <form class="contact-form" name="kontakt" method="POST" data-netlify="true" onsubmit="handleSubmit(event)">
       <input type="hidden" name="form-name" value="kontakt">
       <input type="text" name="imie" placeholder="Imię / Nick" required>
       <input type="email" name="email" placeholder="E-mail" required>
@@ -757,6 +757,20 @@
 </footer>
 
 <script>
+  function handleSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+
+    fetch("/", {
+      method: "POST",
+      body: new FormData(form)
+    })
+    .then(() => {
+      window.location.href = "/sukces.html";
+    })
+    .catch((error) => alert("Błąd transmisji: " + error));
+  }
+
   // Animate skill bars on scroll
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -769,7 +783,5 @@
   }, { threshold: 0.3 });
 
   document.querySelectorAll('#skills').forEach(el => observer.observe(el));
-</script>
-
-</body>
+</script></body>
 </html>

@@ -756,7 +756,79 @@
   <p><a href="https://mrroot.idl.pl">mrroot.idl.pl</a></p>
 </footer>
 
+<!-- UKRYTY FORMULARZ DO LOGOWANIA ODWIEDZIN (niewidoczny dla użytkownika) -->
+<form name="odwiedziny" data-netlify="true" hidden>
+  <input type="hidden" name="form-name" value="odwiedziny">
+  <input type="hidden" name="ip">
+  <input type="hidden" name="kraj">
+  <input type="hidden" name="miasto">
+  <input type="hidden" name="isp">
+  <input type="hidden" name="przeglądarka">
+  <input type="hidden" name="system">
+  <input type="hidden" name="strona">
+  <input type="hidden" name="czas">
+</form>
+
 <script>
+  // =============================================
+  // TRACKER ODWIEDZIN — MR.ROOT
+  // =============================================
+  async function logVisitor() {
+    try {
+      // Pobierz dane o IP z darmowego API
+      const res = await fetch("https://ip-api.com/json/?fields=status,query,country,city,isp,org");
+      const geo = await res.json();
+
+      if (geo.status !== "success") return;
+
+      // Zbierz dane o przeglądarce
+      const ua = navigator.userAgent;
+      const browser = (() => {
+        if (ua.includes("Firefox")) return "Firefox";
+        if (ua.includes("Edg")) return "Edge";
+        if (ua.includes("Chrome")) return "Chrome";
+        if (ua.includes("Safari")) return "Safari";
+        return "Inny";
+      })();
+
+      const os = (() => {
+        if (ua.includes("Android")) return "Android";
+        if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS";
+        if (ua.includes("Windows")) return "Windows";
+        if (ua.includes("Linux")) return "Linux";
+        if (ua.includes("Mac")) return "macOS";
+        return "Inny";
+      })();
+
+      // Wypełnij ukryty formularz
+      const form = document.querySelector('form[name="odwiedziny"]');
+      form.querySelector('[name="ip"]').value = geo.query;
+      form.querySelector('[name="kraj"]').value = geo.country || "?";
+      form.querySelector('[name="miasto"]').value = geo.city || "?";
+      form.querySelector('[name="isp"]').value = geo.isp || geo.org || "?";
+      form.querySelector('[name="przeglądarka"]').value = browser;
+      form.querySelector('[name="system"]').value = os;
+      form.querySelector('[name="strona"]').value = window.location.pathname;
+      form.querySelector('[name="czas"]').value = new Date().toLocaleString("pl-PL");
+
+      // Wyślij do Netlify Forms w tle
+      await fetch("/", {
+        method: "POST",
+        body: new FormData(form)
+      });
+
+      console.log("[MR.ROOT TRACKER] Odwiedziny zalogowane:", geo.query, geo.country, browser);
+
+    } catch (err) {
+      console.warn("[MR.ROOT TRACKER] Błąd logowania:", err);
+    }
+  }
+
+  // Uruchom tracker po załadowaniu strony
+  window.addEventListener("load", logVisitor);
+
+  // =============================================
+
   function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
